@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#faf9f7"><title>CHAEM — LOOK BEYOND / Glass Oval 21</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#faf9f7"><title>CHAEM — LOOK BEYOND / Glass Oval 22</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#faf9f7;color:#101114;font-family:Arial,Helvetica,sans-serif}a{color:inherit;text-decoration:none}
@@ -13,7 +13,7 @@ footer{position:absolute;z-index:5;bottom:35px;left:clamp(22px,5vw,76px);right:c
 @media(max-width:700px){header{padding-top:25px}header strong{font-size:10px}nav{gap:13px}nav a{font-size:8px}.cards{grid-template-columns:1fr}.project{min-height:190px}#about{display:block}#about p{margin-top:35px}footer small{font-size:8px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style></head><body>
-<section id="hero"><div id="stage"><canvas id="type"></canvas><canvas id="glass"></canvas></div><header><strong>CHAEM —</strong><nav><a href="#work">WORK</a><a href="#about">ABOUT</a><a href="#contact">CONTACT</a></nav></header><div id="hint">MOVE TO DISCOVER</div><footer><small>CREATIVE PORTFOLIO<br>OPTICAL STUDY / OVAL 21</small><a href="#work">EXPLORE ↓</a></footer></section>
+<section id="hero"><div id="stage"><canvas id="type"></canvas><canvas id="glass"></canvas></div><header><strong>CHAEM —</strong><nav><a href="#work">WORK</a><a href="#about">ABOUT</a><a href="#contact">CONTACT</a></nav></header><div id="hint">MOVE TO DISCOVER</div><footer><small>CREATIVE PORTFOLIO<br>OPTICAL STUDY / OVAL 22</small><a href="#work">EXPLORE ↓</a></footer></section>
 <section id="work"><h2>Selected work.</h2><div class="cards"><a class="project" href="https://www.youtube.com/watch?v=JyBdHkHAHr4" target="_blank" rel="noopener"><div class="placeholder">CAMPAIGN FILM ↗</div><div><b>COWAY — icon mini</b><small>IDEATION / ART DIRECTION</small></div></a><article class="project"><div class="placeholder">PROJECT IMAGE</div><div><b>COWAY — BEREX Pebble</b><small>ADD VIDEO / CASE STUDY</small></div></article><article class="project"><div class="placeholder">PROJECT IMAGE</div><div><b>Selected Campaign</b><small>ADD YOUR WORK</small></div></article></div></section><section id="about"><h2>Drawn to what<br>lies <i>beneath.</i></h2><p>There is always more to see. I look beyond the obvious to find what makes brands worth noticing — and turn those discoveries into experiences people can feel.</p></section><div id="contact" style="padding:30px 6vw 80px;font-size:11px;letter-spacing:.1em">CONTACT — COMING SOON</div>
 <script>
 (()=>{
@@ -26,72 +26,83 @@ varying vec2 vUv;
 uniform sampler2D uText;
 uniform vec2 uResolution,uCenter,uSize,uMotion;
 uniform float uAngle,uVisible;
-const float PI=3.14159265359;
-float gauss(float v,float s){return exp(-.5*(v*v)/(s*s));}
-vec3 tex(vec2 p){return texture2D(uText,clamp(p/uResolution,vec2(0.),vec2(1.))).rgb;}
-float letter(vec2 p){return clamp((.977-dot(tex(p),vec3(.333333)))*1.12,0.,1.);}
+
+float gaussian(float x,float sigma){return exp(-.5*x*x/(sigma*sigma));}
+float glyph(vec2 p){
+  vec3 color=texture2D(uText,clamp(p/uResolution,vec2(0.),vec2(1.))).rgb;
+  return clamp((.984-dot(color,vec3(.333333)))*1.13,0.,1.);
+}
 void main(){
-  vec2 pos=vUv*uResolution;
-  vec2 d=pos-uCenter;
-  float cs=cos(uAngle), sn=sin(uAngle);
-  vec2 local=vec2(cs*d.x+sn*d.y,-sn*d.x+cs*d.y);
-  vec2 q=local/uSize;
+  vec2 pt=vUv*uResolution;
+  vec2 delta=pt-uCenter;
+  float c=cos(uAngle),s=sin(uAngle);
+  vec2 p=vec2(c*delta.x+s*delta.y,-s*delta.x+c*delta.y);
+  vec2 q=p/uSize;
   float r=length(q);
-  vec2 n=normalize(q+vec2(.00001));
-  vec2 t=vec2(-n.y,n.x);
-  float visible=clamp(uVisible,0.,1.);
-  // Offset ambient contact shadow, one piece of glass only.
-  vec2 sh=(local-vec2(-14.,-21.))/(uSize*vec2(1.045,1.12));
-  float sr=length(sh);
-  float shadow=(1.-smoothstep(.78,1.33,sr))*.23*(1.-smoothstep(.90,1.02,r))*visible;
-  float inside=1.-smoothstep(.975,1.008,r);
-  if(inside*visible<.00001 && shadow<.00001){gl_FragColor=vec4(0.);return;}
+  vec2 n=normalize(q+vec2(.000001));
+  vec2 tang=vec2(-n.y,n.x);
+  float body=1.-smoothstep(.978,1.009,r);
 
-  float central=clamp(1.-r,0.,1.);
-  float bevel=smoothstep(.72,.998,r);
-  float bend=.19*pow(central,1.1)+.11*pow(bevel,2.);
-  vec2 offset=n*bend*min(uSize.x,uSize.y);
-  offset+=t*sin(q.x*3.0+q.y*2.0)*4.5*central+uMotion*3.0*central;
-  vec2 refracted=pos+offset;
+  // Lightweight ambient shadow only at the lower edge of ONE optical oval.
+  vec2 sp=(p-vec2(9.,-10.))/(uSize*vec2(1.03,1.09));
+  float sr=length(sp);
+  float shadow=(1.-smoothstep(.88,1.34,sr))*.095*(1.-smoothstep(.93,1.04,r))*uVisible;
+  if(body*uVisible<.0005&&shadow<.0005){
+    gl_FragColor=vec4(0.);
+    return;
+  }
+  float depth=clamp(1.-r,0.,1.);
+  float bevel=smoothstep(.78,.99,r);
+  // Mostly flat polished glass, with concentrated refraction at its bevel.
+  vec2 bend=n*(.060*pow(depth,1.15)+.14*pow(bevel,2.))*min(uSize.x,uSize.y);
+  bend+=tang*2.6*sin(q.x*2.5-q.y*3.6)*depth;
+  bend+=uMotion*1.7*depth;
+  vec2 behind=pt+bend;
+  float k=glyph(behind);
 
-  vec3 background=vec3(.980,.976,.968);
-  float glyph=letter(refracted);
-  vec3 ink=vec3(.040,.042,.053);
-  vec3 color=mix(background,ink,glyph);
+  // Dispersion is defined using local ink contours.
+  // IMPORTANT: mix with saturated colors, never ADD colors to white paper
+  // (adding to white caused the spectrum to disappear in older versions).
+  vec2 axis=normalize(n*.73+tang*.45+vec2(.000001));
+  float warmInk=glyph(behind+axis*10.0);
+  float coolInk=glyph(behind-axis*11.0);
+  float warmEdge=max(0.,warmInk-k);
+  float coolEdge=max(0.,coolInk-k);
+  vec3 amber=vec3(1.00,.49,.11);
+  vec3 cyan=vec3(.02,.72,.99);
+  vec3 ink=vec3(.018,.020,.026);
+  vec3 paper=vec3(.980,.976,.967);
+  vec3 color=mix(paper,ink,k);
+  float warmStrength=smoothstep(.02,.80,warmEdge)*(.45+.43*depth);
+  float coolStrength=smoothstep(.02,.80,coolEdge)*(.48+.42*depth);
+  // Preserve dark text interiors and add thin colored glow outside their contours.
+  color=mix(color,amber,warmStrength);
+  color=mix(color,cyan,coolStrength);
+  float secondCool=max(0.,glyph(behind-axis*5.0)-k);
+  color=mix(color,vec3(.20,.42,.96),secondCool*.12*(1.-k));
 
-  // Chromatic edges are sampled on either side of black glyph contours.
-  vec2 dispersion=normalize(n*.80+t*.32+vec2(.00001));
-  float ia=letter(refracted+dispersion*8.0);
-  float ic=letter(refracted-dispersion*9.0);
-  float edgeA=max(0.,ia-glyph);
-  float edgeC=max(0.,ic-glyph);
-  float chromaStrength=(.42+.57*central);
-  color+=vec3(1.,.49,.18)*edgeA*.72*chromaStrength;
-  color+=vec3(.08,.79,1.)*edgeC*.72*chromaStrength;
-  // Let the lens carry its own visible optical substance over blank paper.
-  float shell=gauss(r-.942,.052);
-  float innerRim=gauss(r-.830,.075);
-  float veryEdge=gauss(r-.996,.018);
-  float top=pow(max(0.,n.y*.92+n.x*.36),2.3);
-  float bottom=pow(max(0.,-n.y*.82+n.x*.57),2.3);
-  float lateral=pow(max(0.,n.x*.91-n.y*.16),4.);
-  float thickness=clamp(shell*(.18+.26*bottom+.10*lateral),0.,.62);
-  color=mix(color,vec3(.67,.79,.89),thickness);
-  color=mix(color,vec3(1.),clamp(veryEdge*(.32+.52*top),0.,.76));
-  color=mix(color,vec3(.91,.95,1.),innerRim*(.075+.11*top));
-  float rimCool=gauss(r-.959,.030)*bottom*.30;
-  color+=vec3(.12,.70,1.)*rimCool;
-  float rimWarm=gauss(r-.950,.033)*top*.19;
-  color+=vec3(1.,.53,.17)*rimWarm;
-  // Two soft specular reflections inside the same solid lens (not extra shapes).
-  float streak=gauss(q.x*.64+q.y*.75-.78,.075)*smoothstep(.48,.88,r);
-  color=mix(color,vec3(1.),streak*.28);
-  float micro=gauss(q.x*.83-q.y*.48+.58,.055)*smoothstep(.66,.93,r);
-  color=mix(color,vec3(1.),micro*.13);
-  // Very restrained cool interior haze, fades in the optical center.
-  color=mix(color,vec3(.95,.972,1.),.042*(1.-glyph)*smoothstep(.45,.83,r));
-  float alpha=clamp(inside*visible+shadow*(1.-inside),0.,1.);
-  if(inside<.06)color=vec3(.56,.57,.61);
+  // A single clean bevel, no balloon-like or watery fill.
+  float edge=gaussian(r-.971,.018);
+  float glassThickness=gaussian(r-.939,.030);
+  float innerReflection=gaussian(r-.872,.047);
+  float litTop=pow(max(0.,n.y*.86+n.x*.45),3.);
+  float litBottom=pow(max(0.,-n.y*.75+n.x*.63),3.);
+  float rimWhite=edge*(.12+.56*litTop);
+  float rimIce=glassThickness*(.095+.18*litBottom);
+  color=mix(color,vec3(.99,.99,1.),rimWhite);
+  color=mix(color,vec3(.57,.77,.91),rimIce);
+  color=mix(color,vec3(1.),innerReflection*(.025+.065*litTop));
+
+  // Sparse precise optical highlights rather than a wet droplet reflection.
+  float specular=gaussian(q.x*.53+q.y*.83-.66,.037)*smoothstep(.70,.94,r);
+  color=mix(color,vec3(1.),specular*.20);
+  float amberRim=gaussian(r-.987,.012)*pow(max(0.,-n.y),4.);
+  float blueRim=gaussian(r-.992,.011)*pow(max(0.,n.x),4.);
+  color=mix(color,amber,amberRim*.22);
+  color=mix(color,cyan,blueRim*.24);
+
+  float alpha=clamp(body*uVisible+shadow*(1.-body),0.,1.);
+  if(body<.08)color=vec3(.60,.61,.65);
   gl_FragColor=vec4(clamp(color,0.,1.),alpha);
 }`;
 function shader(type,source){let s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){throw new Error(gl.getShaderInfoLog(s))}return s;}
@@ -103,9 +114,9 @@ function resize(){const b=stage.getBoundingClientRect();W=Math.max(1,b.width);H=
  if(gl&&program){gl.viewport(0,0,canvas.width,canvas.height);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,textCanvas);gl.uniform2f(loc.uResolution,W,H)}
 }
 resize();addEventListener('resize',resize);document.fonts?.ready.then(resize);
-let x=window.innerWidth*.49,y=window.innerHeight*.48,tx=x,ty=y,visible=1,goal=1,angle=.64,targetAngle=.64,last=performance.now();
+let x=window.innerWidth*.49,y=window.innerHeight*.48,tx=x,ty=y,visible=1,goal=1,angle=.57,targetAngle=.57,last=performance.now();
 function move(e){const r=stage.getBoundingClientRect();tx=e.clientX-r.left;ty=H-(e.clientY-r.top);goal=1;hint.style.opacity='0'}
 stage.addEventListener('pointerenter',move);stage.addEventListener('pointermove',move);stage.addEventListener('pointerdown',move);stage.addEventListener('pointerleave',()=>goal=0);stage.addEventListener('pointercancel',()=>goal=0);stage.addEventListener('touchstart',e=>{if(e.touches[0])move(e.touches[0])},{passive:true});stage.addEventListener('touchmove',e=>{if(e.touches[0])move(e.touches[0])},{passive:true});stage.addEventListener('touchend',()=>goal=0);
-function render(now){requestAnimationFrame(render);if(!gl||!program)return;const dt=Math.min((now-last)/1000,.05);last=now;let prevx=x,prevy=y,k=1-Math.exp(-8.5*dt);x+=(tx-x)*k;y+=(ty-y)*k;const dx=(x-prevx)/Math.max(dt,.01),dy=(y-prevy)/Math.max(dt,.01);targetAngle=.64+Math.max(-.085,Math.min(.085,dx*.00006-dy*.000035));angle+=(targetAngle-angle)*(1-Math.exp(-4.5*dt));visible+=(goal-visible)*(1-Math.exp(-8*dt));let scale=Math.min(W*.38,H*.32,248);if(W<680)scale=Math.min(W*.52,H*.28,174);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.uniform2f(loc.uCenter,x,y);gl.uniform2f(loc.uSize,scale*1.04,scale*.64);gl.uniform2f(loc.uMotion,Math.max(-1,Math.min(1,dx/800)),Math.max(-1,Math.min(1,dy/800)));gl.uniform1f(loc.uAngle,angle);gl.uniform1f(loc.uVisible,visible);gl.drawArrays(gl.TRIANGLE_STRIP,0,4)}requestAnimationFrame(render);
+function render(now){requestAnimationFrame(render);if(!gl||!program)return;const dt=Math.min((now-last)/1000,.05);last=now;let prevx=x,prevy=y,k=1-Math.exp(-8.5*dt);x+=(tx-x)*k;y+=(ty-y)*k;const dx=(x-prevx)/Math.max(dt,.01),dy=(y-prevy)/Math.max(dt,.01);targetAngle=.57+Math.max(-.055,Math.min(.055,dx*.000045-dy*.00003));angle+=(targetAngle-angle)*(1-Math.exp(-4.5*dt));visible+=(goal-visible)*(1-Math.exp(-8*dt));let scale=Math.min(W*.32,H*.285,235);if(W<680)scale=Math.min(W*.47,H*.26,160);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.uniform2f(loc.uCenter,x,y);gl.uniform2f(loc.uSize,scale*1.24,scale*.51);gl.uniform2f(loc.uMotion,Math.max(-1,Math.min(1,dx/800)),Math.max(-1,Math.min(1,dy/800)));gl.uniform1f(loc.uAngle,angle);gl.uniform1f(loc.uVisible,visible);gl.drawArrays(gl.TRIANGLE_STRIP,0,4)}requestAnimationFrame(render);
 })();
 </script></body></html>
