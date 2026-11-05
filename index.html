@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#faf9f7"><title>CHAEM — LOOK BEYOND / Oval Optical Glass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#faf9f7;color:#101114;font-family:Arial,Helvetica,sans-serif}a{color:inherit;text-decoration:none}
+#hero{height:100svh;min-height:530px;position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse 85% 72% at 75% 33%,rgba(224,229,238,.32),transparent 74%),radial-gradient(ellipse 90% 80% at 23% 78%,rgba(234,226,222,.20),transparent 80%),#faf9f7}
+#stage{position:absolute;inset:0;cursor:crosshair;touch-action:pan-y}#stage canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}#glass{z-index:2}
+header{position:absolute;z-index:5;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:32px clamp(22px,5vw,76px);pointer-events:none}header strong{font-size:12px;letter-spacing:.25em;font-weight:700}nav{display:flex;gap:30px}nav a{pointer-events:auto;font-size:10px;letter-spacing:.16em}
+footer{position:absolute;z-index:5;bottom:35px;left:clamp(22px,5vw,76px);right:clamp(22px,5vw,76px);display:flex;align-items:end;justify-content:space-between;pointer-events:none}footer small{font-size:9px;letter-spacing:.16em;line-height:1.85;color:#55575d}footer a{font-size:10px;letter-spacing:.16em;pointer-events:auto;font-weight:700}
+#hint{position:absolute;bottom:11%;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:.2em;color:#868990;pointer-events:none;transition:opacity .5s}
+#work{padding:90px max(22px,6vw) 120px}#work h2{font-size:clamp(38px,7vw,86px);letter-spacing:-.07em;font-weight:500;margin:0 0 28px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.project{min-height:300px;background:#f0efec;padding:18px;display:flex;justify-content:space-between;flex-direction:column}.project .placeholder{flex:1;display:grid;place-items:center;font-size:10px;letter-spacing:.15em;color:#9b9ba0}.project b{font-size:15px}.project small{display:block;font-size:10px;letter-spacing:.09em;margin-top:8px;color:#555}
+#about{border-top:1px solid #ddd;padding:80px max(22px,6vw);display:flex;gap:30px;justify-content:space-between}#about h2{font-size:clamp(36px,5vw,72px);font-weight:500;letter-spacing:-.055em;line-height:1.1;margin:0}#about p{max-width:360px;font-size:13px;color:#555;line-height:1.8}
+@media(max-width:700px){header{padding-top:25px}header strong{font-size:10px}nav{gap:13px}nav a{font-size:8px}.cards{grid-template-columns:1fr}.project{min-height:190px}#about{display:block}#about p{margin-top:35px}footer small{font-size:8px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head><body>
+<section id="hero"><div id="stage"><canvas id="type"></canvas><canvas id="glass"></canvas></div><header><strong>CHAEM —</strong><nav><a href="#work">WORK</a><a href="#about">ABOUT</a><a href="#contact">CONTACT</a></nav></header><div id="hint">MOVE TO DISCOVER</div><footer><small>CREATIVE PORTFOLIO<br>OPTICAL STUDY / OVAL 19</small><a href="#work">EXPLORE ↓</a></footer></section>
+<section id="work"><h2>Selected work.</h2><div class="cards"><a class="project" href="https://www.youtube.com/watch?v=JyBdHkHAHr4" target="_blank" rel="noopener"><div class="placeholder">CAMPAIGN FILM ↗</div><div><b>COWAY — icon mini</b><small>IDEATION / ART DIRECTION</small></div></a><article class="project"><div class="placeholder">PROJECT IMAGE</div><div><b>COWAY — BEREX Pebble</b><small>ADD VIDEO / CASE STUDY</small></div></article><article class="project"><div class="placeholder">PROJECT IMAGE</div><div><b>Selected Campaign</b><small>ADD YOUR WORK</small></div></article></div></section><section id="about"><h2>Drawn to what<br>lies <i>beneath.</i></h2><p>There is always more to see. I look beyond the obvious to find what makes brands worth noticing — and turn those discoveries into experiences people can feel.</p></section><div id="contact" style="padding:30px 6vw 80px;font-size:11px;letter-spacing:.1em">CONTACT — COMING SOON</div>
+<script>
+(()=>{
+const stage=document.getElementById('stage'),type=document.getElementById('type'),tc=type.getContext('2d'),canvas=document.getElementById('glass'),hint=document.getElementById('hint');
+let gl;try{gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false,preserveDrawingBuffer:false});}catch(e){};
+const textCanvas=document.createElement('canvas'),textCtx=textCanvas.getContext('2d');let W=1,H=1,pr=1,program=null,loc={},texture=null;
+const vs=`attribute vec2 aPos;varying vec2 vUv;void main(){vUv=(aPos+1.)*.5;gl_Position=vec4(aPos,0.,1.);}`;
+const fs=`precision highp float;
+varying vec2 vUv;uniform sampler2D uText;uniform vec2 uResolution,uCenter,uSize,uMotion;uniform float uAngle,uVisible;
+const float PI=3.14159265;
+vec3 sampleText(vec2 xy){return texture2D(uText,clamp(xy/uResolution,vec2(0.),vec2(1.))).rgb;}
+float ink(vec2 xy){return clamp((.98-dot(sampleText(xy),vec3(.33333)))*1.1,0.,1.);}
+float gauss(float v,float width){return exp(-.5*pow(v/width,2.));}
+void main(){
+ vec2 pt=vUv*uResolution, delta=pt-uCenter;
+ float cs=cos(uAngle),sn=sin(uAngle);
+ vec2 local=vec2(cs*delta.x+sn*delta.y,-sn*delta.x+cs*delta.y);
+ vec2 q=local/uSize;float r=length(q);
+ vec2 sd=local-vec2(10.,-14.);
+ float shR=length(sd/(uSize*vec2(1.05,1.10)));
+ float softShadow=(1.-smoothstep(.90,1.50,shR))*.13*(1.-smoothstep(.8,.99,r))*uVisible;
+ float opaque=1.-smoothstep(.985,1.005,r);
+ if(opaque*uVisible<.0005&&softShadow<.0005){gl_FragColor=vec4(0.);return;}
+ vec2 radial=normalize(q+vec2(.0001));vec2 tangent=vec2(-radial.y,radial.x);
+ float center=clamp(1.-r,0.,1.);
+ float thickRim=smoothstep(.67,.96,r);
+ // Optical magnification + localized bending that follows a thick polished bevel.
+ vec2 displacement=(radial*(.18*pow(center,1.3)+.085*thickRim)*min(uSize.x,uSize.y)+tangent*7.*sin(q.x*2.1+q.y*5.1)*center*.55)+uMotion*2.2*center;
+ vec2 uv=pt+displacement;
+ float k=ink(uv);
+ vec3 blackText=mix(vec3(.986,.982,.975),vec3(.012,.014,.023),k);
+ // Subtle physically motivated spectral edge fringes: amber to cyan across the black contours.
+ vec2 axis=normalize(radial*.8+tangent*.38);
+ float amber=0.,cyan=0.,gold=0.;
+ for(int i=0;i<7;i++){
+   float t=float(i)/6.;float shift=(t-.5)*(13.+8.*center);
+   vec2 sampleP=uv+axis*shift;
+   float v=ink(sampleP);
+   float w=gauss(t-.25,.23);
+   amber+=v*w;cyan+=v*gauss(t-.77,.22);gold+=v*gauss(t-.43,.22);
+ }
+ amber/=3.3;cyan/=3.2;gold/=3.2;
+ float clean=1.-smoothstep(.09,.8,k);
+ vec3 chromatic=vec3(.99,.31,.055)*amber+vec3(1.,.72,.21)*gold*.38+vec3(.035,.70,.96)*cyan;
+ chromatic*=clean*(.22+.65*center);
+ // A translucent glass body with a carved/rounded thick edge, an optical inner line, and directional speculars.
+ float bevel=gauss(r-.946,.040);
+ float interior=gauss(r-.830,.065);
+ float lightFromTop=pow(max(0.,radial.y*.82+radial.x*.48),3.);
+ float lightFromBottom=pow(max(0.,-radial.y*.78+radial.x*.62),4.);
+ float rimLight=bevel*(.25+.52*lightFromTop);
+ float internalReflection=interior*(.05+.11*lightFromTop);
+ float coolEdge=bevel*lightFromBottom*.30;
+ vec3 glass=blackText;
+ glass=mix(glass,vec3(1.),clamp(rimLight+internalReflection,0.,.73));
+ glass=mix(glass,vec3(.49,.70,.91),coolEdge);
+ // Narrow highlight streak follows the upper-left face; no duplicate rim objects.
+ float streak=gauss(q.x*.60+q.y*.8-.66,.09)*smoothstep(.38,.85,r)*.11;
+ glass=mix(glass,vec3(1.),streak);
+ // Chromatic light is mainly outside black glyphs, keeping the interior ink dark.
+ glass+=chromatic;
+ float alpha=clamp(opaque*uVisible + softShadow*(1.-opaque),0.,1.);
+ if(opaque<.1)glass=vec3(.46,.49,.56);
+ gl_FragColor=vec4(clamp(glass,0.,1.),alpha);
+}`;
+function shader(type,source){let s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){throw new Error(gl.getShaderInfoLog(s))}return s;}
+if(gl){try{program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vs));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));gl.useProgram(program);let p=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,p);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);let a=gl.getAttribLocation(program,'aPos');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);for(let k of ['uText','uResolution','uCenter','uSize','uMotion','uAngle','uVisible'])loc[k]=gl.getUniformLocation(program,k);texture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,texture);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.uniform1i(loc.uText,0);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);}catch(e){console.warn('WebGL fallback',e);program=null;}}
+function resize(){const b=stage.getBoundingClientRect();W=Math.max(1,b.width);H=Math.max(1,b.height);pr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*pr);canvas.height=Math.round(H*pr);type.width=canvas.width;type.height=canvas.height;textCanvas.width=type.width;textCanvas.height=type.height;tc.setTransform(pr,0,0,pr,0,0);textCtx.setTransform(pr,0,0,pr,0,0);tc.clearRect(0,0,W,H);textCtx.fillStyle='#faf9f7';textCtx.fillRect(0,0,W,H);
+ const mob=W<680;let font=Math.min(W*(mob?.226:.193),H*(mob?.155:.235),260);const family='"Montserrat", "Arial Black", Arial,sans-serif';tc.font=`900 ${font}px ${family}`;const width=tc.measureText('BEYOND.').width;if(width>W*.91)font*=W*.91/width;
+ let x=W*(mob?.058:.061),base=H*(mob?.50:.47),leading=font*(mob?1.13:1.05);
+ for(let ctx of [tc,textCtx]){ctx.font=`900 ${font}px ${family}`;ctx.fillStyle='#101115';ctx.textBaseline='alphabetic';ctx.fillText('LOOK',x,base);ctx.fillText('BEYOND.',x,base+leading)}
+ if(gl&&program){gl.viewport(0,0,canvas.width,canvas.height);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,textCanvas);gl.uniform2f(loc.uResolution,W,H)}
+}
+resize();addEventListener('resize',resize);document.fonts?.ready.then(resize);
+let x=-1000,y=-1000,tx=-1000,ty=-1000,visible=0,goal=0,angle=.94,targetAngle=.94,last=performance.now();
+function move(e){const r=stage.getBoundingClientRect();tx=e.clientX-r.left;ty=H-(e.clientY-r.top);goal=1;hint.style.opacity='0'}
+stage.addEventListener('pointerenter',move);stage.addEventListener('pointermove',move);stage.addEventListener('pointerdown',move);stage.addEventListener('pointerleave',()=>goal=0);stage.addEventListener('pointercancel',()=>goal=0);stage.addEventListener('touchstart',e=>{if(e.touches[0])move(e.touches[0])},{passive:true});stage.addEventListener('touchmove',e=>{if(e.touches[0])move(e.touches[0])},{passive:true});stage.addEventListener('touchend',()=>goal=0);
+function render(now){requestAnimationFrame(render);if(!gl||!program)return;const dt=Math.min((now-last)/1000,.05);last=now;let prevx=x,prevy=y,k=1-Math.exp(-8.5*dt);x+=(tx-x)*k;y+=(ty-y)*k;const dx=(x-prevx)/Math.max(dt,.01),dy=(y-prevy)/Math.max(dt,.01);targetAngle=.94+Math.max(-.13,Math.min(.13,dx*.00010-dy*.00007));angle+=(targetAngle-angle)*(1-Math.exp(-4.5*dt));visible+=(goal-visible)*(1-Math.exp(-8*dt));let scale=Math.min(W*.34,H*.245,175);if(W<680)scale=Math.min(W*.38,H*.22,155);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.uniform2f(loc.uCenter,x,y);gl.uniform2f(loc.uSize,scale*.97,scale*.60);gl.uniform2f(loc.uMotion,Math.max(-1,Math.min(1,dx/800)),Math.max(-1,Math.min(1,dy/800)));gl.uniform1f(loc.uAngle,angle);gl.uniform1f(loc.uVisible,visible);gl.drawArrays(gl.TRIANGLE_STRIP,0,4)}requestAnimationFrame(render);
+})();
+</script></body></html>
